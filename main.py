@@ -5,7 +5,7 @@ from Minizinc import Minizinc
 from Solver import Solver1, Solver2, Solver3
 
 
-grid = Grid('8x8/game1.txt')
+grid = Grid('games/8x8/game1.txt')
 
 m = Minizinc(grid)
 m.convert()
