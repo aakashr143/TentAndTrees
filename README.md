@@ -26,3 +26,9 @@ TT.... <row constraint>
 ...T.. <row constraint>
 <column constraint> <column constraint> <column constraint>
 ```
+
+The solution to the puzzle is printed on the console. Where 4 symbols are used. You can ignore the symbols for Grass.
+Tree: "T"
+Tent: "A"
+Grass: "*"
+Empty: "."
