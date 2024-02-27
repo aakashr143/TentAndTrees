@@ -1,13 +1,13 @@
 import copy
 from itertools import combinations
 from utils import *
-from typing import List
+from typing import List, Dict
 
 
 class Solver1:
     """
        Loops through all possible tent placements in a row
-       Not used in the report, slower compared to Solver2 and Solver3
+       Not used in the report
     """
 
     def __init__(self, grid: List[List[str]], row_constraints: List[int], column_constraints: List[int]):
@@ -106,7 +106,7 @@ class Solver3:
     """
         Loops through all possible tent placements for a tree
         Reduces domain for the remaining trees
-        Not used in the report, slower compared to Solver2
+        Not used in the report
     """
 
     def __init__(self, grid: List[List[str]], row_constraints: List[int], column_constraints: List[int]):
@@ -117,7 +117,6 @@ class Solver3:
         self.is_solved = False
         self.tree_domain: List[List[List[int]]] = []
 
-        # Get all the possible location of tents
         for i, row in enumerate(self.grid):
             for j, cell in enumerate(row):
                 if cell == TREE:
@@ -151,6 +150,64 @@ class Solver3:
             g[n[0]][n[1]] = TENT
             reduced_domain = self.__reduce_tree_domain(g, tree_domain[1:])
             if any(len(d) == 0 for d in reduced_domain):
+                continue
+
+            self.__solve(g, reduced_domain)
+
+
+class Solver4:
+    """
+        Loops through all possible tent placements for a tree
+        Reduces domain for the remaining trees
+        Selects next tree based on minimum remaining value
+        Not used in the report
+    """
+
+    def __init__(self, grid: List[List[str]], row_constraints: List[int], column_constraints: List[int]):
+        self.grid = copy.deepcopy(grid)
+        self.row_constraints = row_constraints
+        self.column_constraints = column_constraints
+
+        self.is_solved = False
+        self.tree_domain: Dict[int, List[List[int]]] = {}
+
+        for i, row in enumerate(self.grid):
+            for j, cell in enumerate(row):
+                if cell == TREE:
+                    self.tree_domain[len(self.tree_domain)] = [n for n in get_neighbour_indexes(grid, i, j, 4) if
+                                                               is_valid_tent_placement(grid, self.row_constraints,
+                                                                                       self.column_constraints,
+                                                                                       n[0], n[1])]
+
+        self.__solve(self.grid, self.tree_domain)
+
+    def __reduce_tree_domain(self, grid, tree_domain: Dict[int, List[List[int]]]):
+        reduced_domain = {}
+        for idx, positions in tree_domain.items():
+            reduced_domain[idx] = [n for n in positions if
+                                   is_valid_tent_placement(grid, self.row_constraints, self.column_constraints, n[0],
+                                                           n[1])]
+
+        return reduced_domain
+
+    def __solve(self, grid: List[List[str]], tree_domain: Dict[int, List[List[int]]]):
+        if self.is_solved:
+            return
+
+        if len(tree_domain) == 0:
+            if check_grid(grid, self.row_constraints, self.column_constraints):
+                self.is_solved = True
+                display_grid(grid, self.row_constraints, self.column_constraints)
+            return
+
+        # Select tree with minimum remain value
+        mrv_tree = tree_domain.pop(min(tree_domain, key=lambda k: len(tree_domain[k])))
+
+        for n in mrv_tree:
+            g = copy.deepcopy(grid)
+            g[n[0]][n[1]] = TENT
+            reduced_domain = self.__reduce_tree_domain(g, tree_domain)
+            if any(len(arr) == 0 for arr in reduced_domain.values()):
                 continue
 
             self.__solve(g, reduced_domain)
